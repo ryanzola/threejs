@@ -74,7 +74,6 @@ Decoration.prototype.updatePosition = function() {
 };
 
 
-
 // Create a scene which will hold all our meshes to be rendered
 var scene = new THREE.Scene();
 
@@ -83,7 +82,7 @@ var camera = new THREE.PerspectiveCamera(
   60,                                   // Field of view
   window.innerWidth/window.innerHeight, // Aspect ratio
   0.1,                                  // Near clipping pane
-  1000                                  // Far clipping pane
+  2000                                  // Far clipping pane
 );
 
 // Reposition the camera
@@ -99,7 +98,7 @@ var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 
 // Set a near white clear color (default is black)
-renderer.setClearColor( 0xfff6e6 );
+//renderer.setClearColor( 0xfff6e6 );
 
 // Enable shadow mapping
 renderer.shadowMap.enabled = true;
@@ -129,58 +128,62 @@ pointLight.shadow.mapSize.width = 1024;
 pointLight.shadow.mapSize.height = 1024;
 scene.add( pointLight );
 
-var underFloor = new THREE.Mesh(
-  new THREE.BoxGeometry(308, 2, 308),
-  new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.8 }),
-  new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
-);
-underFloor.position.y -= 1;
-scene.add(underFloor);
+function makeGrid(gridSize, tileSize, separator, color) {
+  const tileGroup = new THREE.Group();
+  for(var i = 0; i < Math.pow(gridSize, 2); i++) {
+    tileGroup.add(
+      new THREE.Mesh(
+        new THREE.BoxGeometry(tileSize, 2, tileSize),
+        new THREE.MeshStandardMaterial({ color: color }),
+        new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
+      )
+    );
+  }
+  var multiplier = Math.floor(gridSize/2) * -1;
+  const coords = [];
 
-var wall1 = new THREE.Mesh(
-  new THREE.BoxGeometry(308, 2, 308),
-  new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.8 }),
-  new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
-);
-wall1.rotation.x = Math.PI / 2;
-wall1.position.y = 308 / 2;
-wall1.position.z = 308 / 2;
-scene.add(wall1);
+  for(var j = multiplier; j <= Math.floor(gridSize/2); j++) {
+    coords.push((tileSize + separator) * j);
+    console.info(j);
+  }
 
+  console.info(coords);
 
-var planeGroup = new THREE.Group();
+  var xIndex = 0;
+  var zIndex = 0;
 
-for(var i = 0; i < 9; i++) {
-  planeGroup.add(
-    new THREE.Mesh(
-      new THREE.BoxGeometry(100, 2, 100),
-      new THREE.MeshStandardMaterial({ color: 0x002233 }),
-      new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
-    )
+  tileGroup.children.forEach(function(tile, index) {
+    tile.position.x = coords[xIndex];
+    tile.position.z = coords[zIndex];
+    console.info(`tile ${index} has coordinates [${coords[xIndex]}, ${coords[zIndex]}]`);
+    zIndex++;
+    if(index % (gridSize) === 0) {
+      xIndex++;
+    }
+
+    if(xIndex === gridSize) {
+      xIndex = 0;
+    }
+
+    if(zIndex === gridSize) {
+      zIndex = 0;
+    }
+  });
+
+  //Generate the underfloor
+  const floorSize = (tileSize + separator) * (coords.length);
+  var underFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(floorSize, 2, floorSize),
+    new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 }),
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
   );
+  underFloor.position.y -= 1;
+  scene.add(underFloor);
+
+  scene.add(tileGroup);
 }
 
-const coords = [-102, 0, 102];
-var xIndex = 0;
-var zIndex = 0;
-planeGroup.children.forEach(function(plane, index) {
-  plane.position.x = coords[xIndex];
-  plane.position.z = coords[zIndex];
-  zIndex++;
-  if(index % 3 === 0) {
-    xIndex++;
-  }
-
-  if(xIndex === 3) {
-    xIndex = 0;
-  }
-
-  if(zIndex === 3) {
-    zIndex = 0;
-  }
-});
-
-scene.add(planeGroup);
+makeGrid(17, 64, 2, 0x002233);
 
 
 var decorations = [];
@@ -202,11 +205,11 @@ decoration3.position.set(-20,20,-12);
 scene.add(decoration3);
 decorations.push(decoration3);
 
-var program = function ( context ) {
-  context.beginPath();
-  context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
-  context.fill();
-};
+// var program = function ( context ) {
+//   context.beginPath();
+//   context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
+//   context.fill();
+// };
 
 var group = new THREE.Group();
 scene.add( group );
