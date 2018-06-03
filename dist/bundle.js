@@ -206,10 +206,7 @@ function makeGrid(gridSize, tileSize, separator, color) {
 
   for (var j = multiplier; j <= Math.floor(gridSize / 2); j++) {
     coords.push((tileSize + separator) * j);
-    console.info(j);
   }
-
-  console.info(coords);
 
   var xIndex = 0;
   var zIndex = 0;
@@ -243,24 +240,24 @@ function makeGrid(gridSize, tileSize, separator, color) {
 
 makeGrid(17, 64, 2, 0x002233);
 
-var decorations = [];
+// var decorations = [];
 
-// Add some new instances of our decoration
-var decoration1 = new Decoration();
-decoration1.position.y += 10;
-scene.add(decoration1);
-decorations.push(decoration1);
+// // Add some new instances of our decoration
+// var decoration1 = new Decoration();
+// decoration1.position.y += 10;
+// scene.add(decoration1);
+// decorations.push(decoration1);
 
-var decoration2 = new Decoration();
-decoration2.position.set(20, 15, -10);
-decoration2.scale.set(.8, .8, .8);
-scene.add(decoration2);
-decorations.push(decoration2);
+// var decoration2 = new Decoration();
+// decoration2.position.set(20,15,-10);
+// decoration2.scale.set(.8,.8,.8);
+// scene.add(decoration2);
+// decorations.push(decoration2);
 
-var decoration3 = new Decoration();
-decoration3.position.set(-20, 20, -12);
-scene.add(decoration3);
-decorations.push(decoration3);
+// var decoration3 = new Decoration();
+// decoration3.position.set(-20,20,-12);
+// scene.add(decoration3);
+// decorations.push(decoration3);
 
 // var program = function ( context ) {
 //   context.beginPath();
@@ -272,7 +269,8 @@ var group = new THREE.Group();
 scene.add(group);
 for (var i = 0; i < 1500; i++) {
   var material = new THREE.SpriteMaterial({
-    color: Math.random() * 0x808008 + 0x808080,
+    //color: Math.random() * 0x808008 + 0x808080,
+    color: 0xffffff,
     lights: true
 
   });
@@ -280,7 +278,7 @@ for (var i = 0; i < 1500; i++) {
   particle.position.x = Math.random() * 2000 - 1000;
   particle.position.y = Math.random() * 2000 - 1000;
   particle.position.z = Math.random() * 2000 - 1000;
-  particle.scale.x = particle.scale.y = Math.random() * 10 + 5;
+  particle.scale.x = particle.scale.y = Math.random() * 4 + 1;
   group.add(particle);
 }
 
@@ -299,9 +297,9 @@ function render() {
   controls.update();
 
   // Update the decoration positions
-  for (var d = 0; d < decorations.length; d++) {
-    decorations[d].updatePosition();
-  }
+  // for(var d = 0; d < decorations.length; d++) {
+  //   decorations[d].updatePosition();
+  // }
 
   // Render the scene / camera combination
   renderer.render(scene, camera);
