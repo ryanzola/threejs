@@ -86,7 +86,7 @@ var camera = new THREE.PerspectiveCamera(
 );
 
 // Reposition the camera
-camera.position.set(-100,100,50);
+camera.position.set(0 ,300,-500);
 
 // Point the camera at a given coordinate
 camera.lookAt(new THREE.Vector3(0,15,0));
@@ -116,91 +116,9 @@ window.addEventListener('resize', () => {
 // Append to the document
 document.body.appendChild( renderer.domElement );
 
-// Add an ambient lights
-var ambientLight = new THREE.AmbientLight( 0xffffff, 0.3 );
-scene.add( ambientLight );
-
-// Add a point light that will cast shadows
-var pointLight = new THREE.PointLight( 0xffffff, 1 );
-pointLight.position.set( 25, 50, 25 );
-pointLight.castShadow = true;
-pointLight.shadow.mapSize.width = 1024;
-pointLight.shadow.mapSize.height = 1024;
-scene.add( pointLight );
-
-function makeGrid(gridSize, tileSize, separator, color) {
-  const tileGroup = new THREE.Group();
-  for(var i = 0; i < Math.pow(gridSize, 2); i++) {
-    tileGroup.add(
-      new THREE.Mesh(
-        new THREE.BoxGeometry(tileSize, 2, tileSize),
-        new THREE.MeshStandardMaterial({ color: color }),
-        new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
-      )
-    );
-  }
-  var multiplier = Math.floor(gridSize/2) * -1;
-  const coords = [];
-
-  for(var j = multiplier; j <= Math.floor(gridSize/2); j++) {
-    coords.push((tileSize + separator) * j);
-  }
-
-  var xIndex = 0;
-  var zIndex = 0;
-
-  tileGroup.children.forEach(function(tile, index) {
-    tile.position.x = coords[xIndex];
-    tile.position.z = coords[zIndex];
-    console.info(`tile ${index} has coordinates [${coords[xIndex]}, ${coords[zIndex]}]`);
-    zIndex++;
-    if(index % (gridSize) === 0) {
-      xIndex++;
-    }
-
-    if(xIndex === gridSize) {
-      xIndex = 0;
-    }
-
-    if(zIndex === gridSize) {
-      zIndex = 0;
-    }
-  });
-
-  //Generate the underfloor
-  const floorSize = (tileSize + separator) * (coords.length);
-  var underFloor = new THREE.Mesh(
-    new THREE.BoxGeometry(floorSize, 2, floorSize),
-    new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 }),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
-  );
-  underFloor.position.y -= 1;
-  scene.add(underFloor);
-
-  scene.add(tileGroup);
-}
+createLights();
 
 makeGrid(17, 64, 2, 0x002233);
-
-
-// var decorations = [];
-
-// // Add some new instances of our decoration
-// var decoration1 = new Decoration();
-// decoration1.position.y += 10;
-// scene.add(decoration1);
-// decorations.push(decoration1);
-
-// var decoration2 = new Decoration();
-// decoration2.position.set(20,15,-10);
-// decoration2.scale.set(.8,.8,.8);
-// scene.add(decoration2);
-// decorations.push(decoration2);
-
-// var decoration3 = new Decoration();
-// decoration3.position.set(-20,20,-12);
-// scene.add(decoration3);
-// decorations.push(decoration3);
 
 // var program = function ( context ) {
 //   context.beginPath();
@@ -234,22 +152,115 @@ renderer.render(scene, camera);
 var controls = new OrbitControls( camera, renderer.domElement );
 controls.target = new THREE.Vector3(0,15,0);
 controls.maxPolarAngle = Math.PI / 2;
+controls.autoRotate = true;
 
 requestAnimationFrame(render);
 
 function render() {
   controls.update();
 
-  // Update the decoration positions
-  // for(var d = 0; d < decorations.length; d++) {
-  //   decorations[d].updatePosition();
-  // }
-
   // Render the scene / camera combination
   renderer.render(scene, camera);
 
   // Repeat
   requestAnimationFrame(render);
+}
+
+
+function makeGrid(gridSize, tileSize, separator, color) {
+  const tileGroup = new THREE.Group();
+  for(var i = 0; i < Math.pow(gridSize, 2); i++) {
+    tileGroup.add(
+      new THREE.Mesh(
+        new THREE.BoxGeometry(tileSize, 2, tileSize),
+        new THREE.MeshStandardMaterial({ color: color }),
+        new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
+      )
+    );
+  }
+  var multiplier = Math.floor(gridSize/2) * -1;
+  const coords = [];
+
+  for(var j = multiplier; j <= Math.floor(gridSize/2); j++) {
+    coords.push((tileSize + separator) * j);
+  }
+
+  var xIndex = 0;
+  var zIndex = 0;
+
+  tileGroup.children.forEach(function(tile, index) {
+    tile.position.x = coords[xIndex];
+    tile.position.z = coords[zIndex];
+    zIndex++;
+    if(index % (gridSize) === 0) {
+      xIndex++;
+    }
+
+    if(xIndex === gridSize) {
+      xIndex = 0;
+    }
+
+    if(zIndex === gridSize) {
+      zIndex = 0;
+    }
+  });
+
+  //Generate the underfloor
+  const floorSize = (tileSize + separator) * (coords.length);
+  var underFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(floorSize, 2, floorSize),
+    new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 }),
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
+  );
+  underFloor.position.y -= 1;
+  scene.add(underFloor);
+
+  scene.add(tileGroup);
+}
+
+function createLights() {
+  // Add an ambient lights
+  var ambientLight = new THREE.AmbientLight( 0xffffff, 0.3 );
+  scene.add( ambientLight );
+
+  var pointLightGroup = new THREE.Group();
+  // Add a point light that will cast shadows
+  var pointLight = new THREE.PointLight( 0xffffff, 1 );
+  pointLight.position.set( 0, 200, 0 );
+  pointLight.castShadow = true;
+  pointLight.shadow.mapSize.width = 1024;
+  pointLight.shadow.mapSize.height = 1024;
+  pointLightGroup.add( pointLight );
+
+  var pointLight2 = new THREE.PointLight( 0xffffff, 0.2 );
+  pointLight2.position.set( 528, 50, 528 );
+  pointLight2.castShadow = true;
+  pointLight2.shadow.mapSize.width = 1024;
+  pointLight2.shadow.mapSize.height = 1024;
+  pointLightGroup.add( pointLight2 );
+
+  var pointLight3 = new THREE.PointLight( 0xffffff, 0.2 );
+  pointLight3.position.set( -528, 50, -528 );
+  pointLight3.castShadow = true;
+  pointLight3.shadow.mapSize.width = 1024;
+  pointLight3.shadow.mapSize.height = 1024;
+  pointLightGroup.add( pointLight3 );
+
+  var pointLight4 = new THREE.PointLight( 0xffffff, 0.2 );
+  pointLight4.position.set( 528, 50, -528 );
+  pointLight4.castShadow = true;
+  pointLight4.shadow.mapSize.width = 1024;
+  pointLight4.shadow.mapSize.height = 1024;
+  pointLightGroup.add( pointLight4 );
+
+  var pointLight5 = new THREE.PointLight( 0xffffff, 0.2 );
+  pointLight5.position.set( -528, 50, 528 );
+  pointLight5.castShadow = true;
+  pointLight5.shadow.mapSize.width = 1024;
+  pointLight5.shadow.mapSize.height = 1024;
+  pointLightGroup.add( pointLight5 );
+
+  scene.add(pointLightGroup);
 }
 
 /**
