@@ -11,7 +11,8 @@
   "dependencies": {
     "dat.gui": "^0.7.2",
     "three": "^0.92.0",
-    "three-orbit-controls": "^82.1.0"
+    "three-orbit-controls": "^82.1.0",
+    "three-pointer-controls": "^0.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",

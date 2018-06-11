@@ -1,81 +1,68 @@
 'use strict';
 
 const THREE = require('three');
-const OrbitControls = require('three-orbit-controls')(THREE);
+//const OrbitControls = require('three-orbit-controls')(THREE);
+const PointerControls = require('three-pointer-controls')(THREE);
 
 
-// We'll define a Decoration, which is just a THREE.Group with some cusomtisation
-var Decoration = function() {
-
-  // Run the Group constructor with the given arguments
-  THREE.Group.apply(this, arguments);
-
-  this.rotationSpeed = Math.random() * 0.02 + 0.005;
-  this.rotationPosition = Math.random();
-
-  // A random color assignment
-  var colors = ['#ff0051', '#f56762','#a53c6c','#f19fa0','#72bdbf','#47689b'];
-
-  // The main bauble is an Octahedron
-  var bauble = new THREE.Mesh(
-    addNoise(new THREE.OctahedronGeometry(12,1), 2),
-    new THREE.MeshStandardMaterial( {
-      color: colors[Math.floor(Math.random()*colors.length)],
+class Decoration {
+  constructor() {
+    // Run the Group constructor with the given arguments
+    THREE.Group.apply(this, arguments);
+    this.rotationSpeed = Math.random() * 0.02 + 0.005;
+    this.rotationPosition = Math.random();
+    // A random color assignment
+    var colors = ['#ff0051', '#f56762', '#a53c6c', '#f19fa0', '#72bdbf', '#47689b'];
+    // The main bauble is an Octahedron
+    var bauble = new THREE.Mesh(addNoise(new THREE.OctahedronGeometry(12, 1), 2), new THREE.MeshStandardMaterial({
+      color: colors[Math.floor(Math.random() * colors.length)],
       flatShading: true,
       metalness: 0,
       roughness: 0.8,
       refractionRatio: 0.25
-    })
-  );
-  bauble.castShadow = true;
-  bauble.receiveShadow = true;
-  bauble.rotateZ(Math.random()*Math.PI*2);
-  bauble.rotateY(Math.random()*Math.PI*2);
-  this.add(bauble);
-
-  // A cylinder to represent the top attachement
-  var shapeOne = new THREE.Mesh(
-    addNoise(new THREE.CylinderGeometry(4, 6, 10, 6, 1), 0.5),
-    new THREE.MeshStandardMaterial( {
+    }));
+    bauble.castShadow = true;
+    bauble.receiveShadow = true;
+    bauble.rotateZ(Math.random() * Math.PI * 2);
+    bauble.rotateY(Math.random() * Math.PI * 2);
+    this.add(bauble);
+    // A cylinder to represent the top attachement
+    var shapeOne = new THREE.Mesh(addNoise(new THREE.CylinderGeometry(4, 6, 10, 6, 1), 0.5), new THREE.MeshStandardMaterial({
       color: 0xf8db08,
       flatShading: true,
       metalness: 0,
       roughness: 0.8,
       refractionRatio: 0.25
-    })
-  );
-  shapeOne.position.y += 8;
-  shapeOne.castShadow = true;
-  shapeOne.receiveShadow = true;
-  this.add(shapeOne);
-
-  // A Torus to represent the top hook
-  var shapeTwo = new THREE.Mesh(
-    addNoise(new THREE.TorusGeometry( 2,1, 6, 4, Math.PI), 0.2),
-    new THREE.MeshStandardMaterial( {
+    }));
+    shapeOne.position.y += 8;
+    shapeOne.castShadow = true;
+    shapeOne.receiveShadow = true;
+    this.add(shapeOne);
+    // A Torus to represent the top hook
+    var shapeTwo = new THREE.Mesh(addNoise(new THREE.TorusGeometry(2, 1, 6, 4, Math.PI), 0.2), new THREE.MeshStandardMaterial({
       color: 0xf8db08,
       flatShading: true,
       metalness: 0,
       roughness: 0.8,
       refractionRatio: 0.25
-    })
-  );
-  shapeTwo.position.y += 13;
-  shapeTwo.castShadow = true;
-  shapeTwo.receiveShadow = true;
-  this.add(shapeTwo);
-
-};
+    }));
+    shapeTwo.position.y += 13;
+    shapeTwo.castShadow = true;
+    shapeTwo.receiveShadow = true;
+    this.add(shapeTwo);
+  }
+  updatePosition() {
+    this.rotationPosition += this.rotationSpeed;
+    this.rotation.y = (Math.sin(this.rotationPosition));
+  }
+}
 Decoration.prototype = Object.create(THREE.Group.prototype);
 Decoration.prototype.constructor = Decoration;
-Decoration.prototype.updatePosition = function() {
-  this.rotationPosition += this.rotationSpeed;
-  this.rotation.y = (Math.sin(this.rotationPosition));
-};
 
 
 // Create a scene which will hold all our meshes to be rendered
 var scene = new THREE.Scene();
+scene.fog = new THREE.Fog( 0x002233, 0, 1000 );
 
 // Create and position a camera
 var camera = new THREE.PerspectiveCamera(
@@ -86,10 +73,8 @@ var camera = new THREE.PerspectiveCamera(
 );
 
 // Reposition the camera
-camera.position.set(0 ,300,-500);
-
-// Point the camera at a given coordinate
-camera.lookAt(new THREE.Vector3(0,15,0));
+camera.position.set(0, 100, -100);
+camera.lookAt(new THREE.Vector3(0, 100, 0));
 
 // Create a renderer
 var renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -98,7 +83,7 @@ var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 
 // Set a near white clear color (default is black)
-//renderer.setClearColor( 0xfff6e6 );
+renderer.setClearColor( 0x52ffd8 );
 
 // Enable shadow mapping
 renderer.shadowMap.enabled = true;
@@ -112,6 +97,31 @@ window.addEventListener('resize', () => {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 });
+
+document.addEventListener('keydown', keyboard, false);
+
+function keyboard() {
+  var speed = 20;
+  // the camera shouldnt be moving, the camera should be following an object that is moving
+  if (event.keyCode === 37) {
+    cube.position.x += speed;
+    camera.position.x += speed;
+  }
+  if (event.keyCode === 39) {
+    cube.position.x -= speed;
+    camera.position.x -= speed;
+  }
+  if (event.keyCode === 40) {
+    cube.position.z -= speed;
+    camera.position.z -= speed;
+  }
+  if (event.keyCode === 38) {
+    cube.position.z += speed;
+    camera.position.z += speed;
+  }
+
+  camera.lookAt(cube.position);
+}
 
 // Append to the document
 document.body.appendChild( renderer.domElement );
@@ -132,10 +142,8 @@ for ( var i = 0; i < 1500; i++ ) {
   var material = new THREE.SpriteMaterial( {
     //color: Math.random() * 0x808008 + 0x808080,
     color: 0xffffff,
-    lights: true
-    
- 
-  } );
+    lights: true 
+  });
   var particle = new THREE.Sprite( material );
   particle.position.x = Math.random() * 2000 - 1000;
   particle.position.y = Math.random() * 2000 - 1000;
@@ -144,21 +152,98 @@ for ( var i = 0; i < 1500; i++ ) {
   group.add( particle );
 }
 
+class Pixel {
+  constructor(x = 0, y = 0, z = 0, color = 0xffffff) {
+    // Run the Group constructor with the given arguments
+    THREE.Group.apply(this, arguments);
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.color = color;
+    var cube = new THREE.Mesh(
+      new THREE.BoxGeometry(20,20, 20),
+      new THREE.MeshStandardMaterial({
+        color: this.color, 
+        opacity: 0.5,
+        premultipliedAlpha: true,
+        transparent: true,
+        roughness: 0,
+        metalness: 0.5
+      }),
+      new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
+    );
+
+    var geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+    var edges = new THREE.EdgesGeometry(geometry);
+    var line = new THREE.LineSegments(edges, 
+      new THREE.LineBasicMaterial({color: 0x000000})
+    );
+
+    var cubeGroup = new THREE.Group();
+    cubeGroup.add(cube);
+    cubeGroup.add(line);
+    cubeGroup.castShadow = true;
+    cubeGroup.receiveShadow = true;
+    cubeGroup.position.x += this.x;
+    cubeGroup.position.y += this.y;
+    cubeGroup.position.z += this.z;
+    this.add(cubeGroup);
+  }
+}
+Pixel.prototype = Object.create(THREE.Group.prototype);
+Pixel.prototype.constructor = Pixel;
+
+var skyBoxGeometry = new THREE.SphereGeometry(600, 200, 200);
+var skyBoxMaterials = new THREE.MeshStandardMaterial({
+  color: 0xffffff, 
+  opacity: 0.5,
+  premultipliedAlpha: true,
+  transparent: true,
+  roughness: 0,
+  metalness: 0.5
+});
+var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterials);
+scene.add(skyBox);
+
+
+var  cube = new THREE.Mesh(
+  new THREE.SphereGeometry(10, 10, 10),
+  new THREE.MeshStandardMaterial({color: 0xff00ff})
+);
+cube.castShadow = true;
+cube.position.set(0, 65, 0);
+
+scene.add(cube);
+// var frame = new THREE.Mesh(
+//   new THREE.BoxGeometry(20,20, 20),
+//   new THREE.MeshStandardMaterial( {
+//     color: 0x000000,
+//     wireframe: true,
+//     wireframeLinejoin: 'miter'
+//   })
+// );
+
 // Render the scene/camera combnation
 renderer.render(scene, camera);
 
 // Add an orbit control which allows us to move around the scene. See the three.js example for more details
 // https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/OrbitControls.
-var controls = new OrbitControls( camera, renderer.domElement );
-controls.target = new THREE.Vector3(0,15,0);
-controls.maxPolarAngle = Math.PI / 2;
-controls.autoRotate = true;
+//var controls = new OrbitControls( camera, renderer.domElement );
+//controls.target = new THREE.Vector3(0,15,0);
+//controls.maxPolarAngle = Math.PI / 2;
+//controls.autoRotate = true;
+
+var controls = new PointerControls();
+controls.control(camera);
+controls.listenTo(renderer.domElement);
+
 
 requestAnimationFrame(render);
 
 function render() {
   controls.update();
 
+  camera.lookAt(cube.position);
   // Render the scene / camera combination
   renderer.render(scene, camera);
 
@@ -212,7 +297,9 @@ function makeGrid(gridSize, tileSize, separator, color) {
     new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 }),
     new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.5 })
   );
-  underFloor.position.y -= 1;
+
+  underFloor.position.y -= 3;
+  tileGroup.position.y -= 2;
   scene.add(underFloor);
 
   scene.add(tileGroup);
